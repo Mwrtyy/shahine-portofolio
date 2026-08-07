@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -23,3 +23,37 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Production build
         run: npm run build
+      - name: Chromium runtime smoke test
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/vite-preview.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill $PREVIEW_PID || true' EXIT
+
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME"
+
+          "$CHROME" \
+            --headless=new \
+            --no-sandbox \
+            --disable-dev-shm-usage \
+            --enable-unsafe-swiftshader \
+            --use-angle=swiftshader \
+            --enable-logging=stderr \
+            --log-level=0 \
+            --dump-dom \
+            http://127.0.0.1:4173/ \
+            > /tmp/rendered.html \
+            2> /tmp/chrome.log
+
+          grep -q 'SHAHINE' /tmp/rendered.html
+          if grep -Eiq 'Uncaught|TypeError|ReferenceError|SyntaxError' /tmp/chrome.log; then
+            cat /tmp/chrome.log
+            exit 1
+          fi
