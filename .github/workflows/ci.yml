@@ -53,8 +53,6 @@ jobs:
               --headless=new \
               --no-sandbox \
               --disable-dev-shm-usage \
-              --enable-unsafe-swiftshader \
-              --use-angle=swiftshader \
               --enable-logging=stderr \
               --log-level=0 \
               --window-size="$SIZE" \
@@ -63,8 +61,11 @@ jobs:
               > "/tmp/${LABEL}.html" \
               2> "/tmp/${LABEL}.log"
 
-            grep -q 'SHAHINE' "/tmp/${LABEL}.html"
-            grep -q 'device-stage' "/tmp/${LABEL}.html"
+            grep -q 'Plety' "/tmp/${LABEL}.html"
+            grep -q 'The intelligence layer' "/tmp/${LABEL}.html"
+            grep -q 'Where speed meets intelligent conversation' "/tmp/${LABEL}.html"
+            grep -q "We've got answers" "/tmp/${LABEL}.html"
+            grep -q 'cdn.sceneai.art' "/tmp/${LABEL}.html"
 
             if grep -Eiq 'Uncaught|TypeError|ReferenceError|SyntaxError' "/tmp/${LABEL}.log"; then
               cat "/tmp/${LABEL}.log"
