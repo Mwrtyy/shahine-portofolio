@@ -1,9 +1,21 @@
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { LiquidGlass, LiquidGlassDefs } from './components/LiquidGlass.jsx'
-import { PhoneScene } from './components/PhoneScene.jsx'
 import { SectionNarrative } from './components/SectionNarrative.jsx'
 import { routes } from './data/projects.js'
 import { useReducedMotion } from './hooks/useReducedMotion.js'
+
+const PhoneScene = lazy(() =>
+  import('./components/PhoneScene.jsx').then((module) => ({ default: module.PhoneScene })),
+)
+
+function DeviceLoader() {
+  return (
+    <div className="device-loader" role="status" aria-label="Loading interactive 3D portfolio">
+      <span />
+      <small>LOADING DEVICE</small>
+    </div>
+  )
+}
 
 export default function App() {
   const [route, setRoute] = useState('home')
@@ -51,7 +63,9 @@ export default function App() {
         <SectionNarrative />
         <aside className="device-stage" aria-label="Interactive portfolio device">
           <div className="device-stage__halo" aria-hidden="true" />
-          <PhoneScene route={route} onNavigate={navigate} reducedMotion={reducedMotion} />
+          <Suspense fallback={<DeviceLoader />}>
+            <PhoneScene route={route} onNavigate={navigate} reducedMotion={reducedMotion} />
+          </Suspense>
           <div className="drag-caption" aria-hidden="true"><span>↔</span> DRAG DEVICE</div>
         </aside>
       </div>
