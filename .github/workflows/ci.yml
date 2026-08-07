@@ -61,10 +61,11 @@ jobs:
               > "/tmp/${LABEL}.html" \
               2> "/tmp/${LABEL}.log"
 
-            grep -q 'Plety' "/tmp/${LABEL}.html"
-            grep -q 'The intelligence layer' "/tmp/${LABEL}.html"
-            grep -q 'Where speed meets intelligent conversation' "/tmp/${LABEL}.html"
-            grep -q "We've got answers" "/tmp/${LABEL}.html"
+            grep -q 'SHAHINE' "/tmp/${LABEL}.html"
+            grep -q 'Cuts that hit before' "/tmp/${LABEL}.html"
+            grep -q 'The edit is the identity' "/tmp/${LABEL}.html"
+            grep -q 'Every cut has a reason' "/tmp/${LABEL}.html"
+            grep -q 'Before the first cut' "/tmp/${LABEL}.html"
             grep -q 'cdn.sceneai.art' "/tmp/${LABEL}.html"
 
             if grep -Eiq 'Uncaught|TypeError|ReferenceError|SyntaxError' "/tmp/${LABEL}.log"; then
