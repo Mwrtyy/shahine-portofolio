@@ -23,7 +23,7 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Production build
         run: npm run build
-      - name: Chromium runtime smoke test
+      - name: Chromium runtime smoke tests
         run: |
           npm run preview -- --host 127.0.0.1 > /tmp/vite-preview.log 2>&1 &
           PREVIEW_PID=$!
@@ -39,21 +39,32 @@ jobs:
           CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
           test -n "$CHROME"
 
-          "$CHROME" \
-            --headless=new \
-            --no-sandbox \
-            --disable-dev-shm-usage \
-            --enable-unsafe-swiftshader \
-            --use-angle=swiftshader \
-            --enable-logging=stderr \
-            --log-level=0 \
-            --dump-dom \
-            http://127.0.0.1:4173/ \
-            > /tmp/rendered.html \
-            2> /tmp/chrome.log
+          run_smoke() {
+            LABEL="$1"
+            SIZE="$2"
 
-          grep -q 'SHAHINE' /tmp/rendered.html
-          if grep -Eiq 'Uncaught|TypeError|ReferenceError|SyntaxError' /tmp/chrome.log; then
-            cat /tmp/chrome.log
-            exit 1
-          fi
+            "$CHROME" \
+              --headless=new \
+              --no-sandbox \
+              --disable-dev-shm-usage \
+              --enable-unsafe-swiftshader \
+              --use-angle=swiftshader \
+              --enable-logging=stderr \
+              --log-level=0 \
+              --window-size="$SIZE" \
+              --dump-dom \
+              http://127.0.0.1:4173/ \
+              > "/tmp/${LABEL}.html" \
+              2> "/tmp/${LABEL}.log"
+
+            grep -q 'SHAHINE' "/tmp/${LABEL}.html"
+            grep -q 'device-stage' "/tmp/${LABEL}.html"
+
+            if grep -Eiq 'Uncaught|TypeError|ReferenceError|SyntaxError' "/tmp/${LABEL}.log"; then
+              cat "/tmp/${LABEL}.log"
+              exit 1
+            fi
+          }
+
+          run_smoke desktop '1440,1000'
+          run_smoke mobile '390,844'
