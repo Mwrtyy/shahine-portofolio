@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v5
         with:
           node-version: 22
@@ -23,18 +23,24 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Production build
         run: npm run build
+      - name: Verify GitHub Pages base path
+        run: |
+          grep -q '/shahine-portofolio/assets/' dist/index.html
+          test ! -e dist/shahine-portofolio
       - name: Chromium runtime smoke tests
         run: |
           npm run preview -- --host 127.0.0.1 > /tmp/vite-preview.log 2>&1 &
           PREVIEW_PID=$!
           trap 'kill $PREVIEW_PID || true' EXIT
 
+          SITE_URL='http://127.0.0.1:4173/shahine-portofolio/'
           for i in {1..20}; do
-            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then
+            if curl -fsS "$SITE_URL" >/dev/null; then
               break
             fi
             sleep 1
           done
+          curl -fsS "$SITE_URL" >/dev/null
 
           CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
           test -n "$CHROME"
@@ -53,7 +59,7 @@ jobs:
               --log-level=0 \
               --window-size="$SIZE" \
               --dump-dom \
-              http://127.0.0.1:4173/ \
+              "$SITE_URL" \
               > "/tmp/${LABEL}.html" \
               2> "/tmp/${LABEL}.log"
 
